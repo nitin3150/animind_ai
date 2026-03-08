@@ -1,3 +1,4 @@
+import uuid
 from pydantic import BaseModel, ConfigDict
 from typing import List, Dict, Any, Optional
 
@@ -57,7 +58,7 @@ class Scene(BaseModel):
     )
 
 class Project(BaseModel):
-    id: str
+    id: uuid.UUID
     resolution: List[int]
     fps: int
     scenes: List[Scene]

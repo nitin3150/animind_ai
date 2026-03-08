@@ -5,6 +5,6 @@ def code_generation_agent(schema: str):
     Manim code.
     Schema: {schema}
     the output should be only the code not the explanation, no markdown formatting,
-    no comments
+    no comments and import the manim library at the top
     """
     return llm(system_prompt)
