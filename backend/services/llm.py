@@ -6,7 +6,7 @@ load_dotenv()
 
 api_key = os.getenv("OPENROUTER_API_KEY")
 
-def llm(system_prompt:str, user_input:str = ""):
+def llm(system_prompt:str, user_input:str):
     response = completion(
         model="openrouter/openai/gpt-4o-mini",
         messages=[
