@@ -1,0 +1,221 @@
+/* App specific minimal css; most will use inline styles or styled components/modules, but we'll stick to vanilla CSS per instructions */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Background blob */
+.bg-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60vw;
+  height: 60vw;
+  background: radial-gradient(circle, rgba(100, 108, 255, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.main-content {
+  z-index: 1;
+  width: 100%;
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.main-content.layout-split {
+  max-width: 1400px;
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+.left-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+}
+
+.main-content.layout-split .left-panel {
+  width: 35%;
+  flex-shrink: 0;
+  position: sticky;
+  top: 2rem;
+}
+
+.right-panel {
+  width: 100%;
+  flex-grow: 1;
+}
+
+@media (max-width: 1000px) {
+  .main-content.layout-split {
+    flex-direction: column;
+  }
+
+  .main-content.layout-split .left-panel {
+    width: 100%;
+    position: static;
+  }
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.header h1 {
+  font-size: 3.5rem;
+  background: linear-gradient(135deg, #ffffff 0%, #aaaaaa 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 1rem;
+}
+
+.header p {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
+.search-box {
+  display: flex;
+  position: relative;
+  width: 100%;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.search-box:focus-within {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 40px -10px var(--accent-glow);
+}
+
+.search-input {
+  width: 100%;
+  padding: 1.2rem 1.5rem;
+  padding-right: 4rem;
+  font-size: 1.1rem;
+  color: var(--text-main);
+  background: rgba(20, 20, 20, 0.8);
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  outline: none;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.search-input:focus {
+  border-color: rgba(100, 108, 255, 0.5);
+  background: rgba(30, 30, 30, 0.9);
+}
+
+.search-button {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--text-main);
+  color: var(--bg-color);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.search-button:hover:not(:disabled) {
+  background: var(--accent-color);
+  color: #fff;
+  transform: translateY(-50%) scale(1.05);
+}
+
+.search-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.result-container {
+  width: 100%;
+  min-height: 400px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+}
+
+.result-header h2 {
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.code-block {
+  background: rgba(0, 0, 0, 0.4);
+  padding: 1.5rem;
+  border-radius: 8px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.9rem;
+  color: #e2e8f0;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  gap: 1rem;
+  color: var(--text-muted);
+}
+
+.spinner {
+  animation: spin 2s linear infinite;
+  color: var(--accent-color);
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error-message {
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.1);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 107, 107, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
