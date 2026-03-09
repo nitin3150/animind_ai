@@ -1,3 +1,14 @@
 .env
 media/
 test.py
+tmp/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# macOS files
+.DS_Store
+
+# Optional: Docker build artifacts
+*.log

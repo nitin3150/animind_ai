@@ -12,7 +12,8 @@ async def generate(user_query:UserQuery):
     result = graph.invoke({"user_query" : user_query.user_query})
     return {
         "code": result["code"],
-        "syntax_valid": result["syntax_valid"]
+        "syntax_valid": result["syntax_valid"],
+        "video_path": result.get("video_path", "")
     }
 
 @router.post("/edit")

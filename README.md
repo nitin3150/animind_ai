@@ -1,5 +1,7 @@
 # Animind AI
 
+![Demo](demo.gif)
+
 Generate and edit mathematical animations with AI — schema-driven, deterministic, and fully interactive.
 
 Animind AI uses the power of Large Language Models (LLMs) to convert natural language descriptions of mathematical or educational scenes into fully functioning Python code using the [Manim](https://www.manim.community/) engine.
