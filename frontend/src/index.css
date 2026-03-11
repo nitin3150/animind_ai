@@ -1,13 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --bg-color: #050505;
-  --panel-bg: rgba(20, 20, 20, 0.6);
-  --border-color: rgba(255, 255, 255, 0.08);
-  --text-main: #ededed;
-  --text-muted: #888888;
-  --accent-color: #646cff;
-  --accent-glow: rgba(100, 108, 255, 0.4);
+  --bg-color: #121212;
+  --text-main: #ffffff;
+  --text-muted: #a1a1aa;
+  --border-color: #27272a;
+  --accent-color: #2dd4bf;
+  --panel-bg: #1f1f22;
 }
 
 * {
@@ -19,6 +18,9 @@
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background-color: var(--bg-color);
+  background-image: radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: 0 0;
   color: var(--text-main);
   min-height: 100vh;
   margin: 0;
@@ -28,7 +30,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -48,19 +49,6 @@ body {
   flex-direction: column;
   min-height: 100vh;
   width: 100%;
-}
-
-h1, h2, h3, h4 {
-  font-weight: 600;
-  letter-spacing: -0.02em;
-}
-
-.glass-panel {
-  background: var(--panel-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
 }
 
 button {

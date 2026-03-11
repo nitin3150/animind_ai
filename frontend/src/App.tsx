@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, TerminalSquare, Search, RefreshCw, Code2, AlertCircle } from 'lucide-react';
+import {
+  Sun, ChevronDown, CornerDownLeft, ArrowUp, Code2, AlertCircle,
+  Play, TrendingUp, Layers, Activity, BarChart2, Sparkles,
+  RefreshCw, Share2, ExternalLink
+} from 'lucide-react';
 import './App.css';
 
 interface GenerateResponse {
@@ -12,21 +15,35 @@ interface GenerateResponse {
 
 function App() {
   const [query, setQuery] = useState('');
+  const [submittedQuery, setSubmittedQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<GenerateResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const endOfMessagesRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (endOfMessagesRef.current) {
+      endOfMessagesRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [loading, result, error]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
 
+    setSubmittedQuery(query);
     setLoading(true);
     setError(null);
     setResult(null);
 
+    // Keep query in input or clear it? Better to clear it for the next message in chat layout
+    const currentQuery = query;
+    setQuery('');
+
     try {
       const { data } = await axios.post<GenerateResponse>('http://127.0.0.1:8000/generate/', {
-        user_query: query
+        user_query: currentQuery
       });
       setResult(data);
     } catch (err: any) {
@@ -39,148 +56,248 @@ function App() {
 
   const handleReset = () => {
     setQuery('');
+    setSubmittedQuery('');
     setResult(null);
     setError(null);
-  }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e as unknown as React.FormEvent);
+    }
+  };
+
+  const isSplitView = !!submittedQuery || loading || error || result;
 
   return (
     <div className="app-container">
-      <div className="bg-glow"></div>
+      {/* Navbar */}
+      <nav className="navbar">
+        <div className="nav-left">
+          <div className="logo-container" onClick={handleReset} style={{ cursor: 'pointer' }}>
+            <Sparkles size={24} color="var(--accent-color)" />
+            <span>Animind AI</span>
+          </div>
+        </div>
+        <div className="nav-right">
+          <button className="icon-btn">
+            <Sun size={18} />
+          </button>
+          <div className="lang-selector">
+            English <ChevronDown size={14} />
+          </div>
+          <span className="profile-text">Nitin Goyal</span>
+          <div className="avatar">
+            <span>NG</span>
+          </div>
+        </div>
+      </nav>
 
-      <motion.div
-        layout
-        className={`main-content ${result ? 'layout-split' : ''}`}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-      >
-        <motion.div layout className="left-panel">
-          <div className="header">
-            <motion.div
-              initial={{ scale: 0.8 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 200, damping: 10 }}
-              style={{ display: 'inline-block', marginBottom: '1rem' }}
-            >
-              <Sparkles size={48} color="var(--accent-color)" />
-            </motion.div>
-            <h1>Animind AI</h1>
-            <p>Generate beautiful Manim mathematical animations from natural language.</p>
+      {/* Main Content */}
+      {!isSplitView ? (
+        <main className="main-content hero-view">
+          <div className="center-logo">
+            <Sparkles size={48} color="var(--accent-color)" />
           </div>
 
+          <h1 className="title">Animate math with Animind AI</h1>
+          <p className="subtitle">Generate animations and interactive 3D math scenes from plain English.</p>
+
           <form onSubmit={handleSubmit} style={{ width: '100%' }}>
-            <div className="search-box glass-panel">
-              <input
-                type="text"
+            <div className="search-container">
+              <textarea
                 className="search-input"
-                placeholder="E.g., Visualize a sine wave transforming into a cosine wave..."
+                placeholder="What math animation would you like to create?"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={handleKeyDown}
                 disabled={loading}
                 autoFocus
               />
-              <button
-                type="submit"
-                className="search-button"
-                disabled={loading || !query.trim()}
-                aria-label="Generate Animation"
-              >
-                {loading ? <RefreshCw size={20} className="spinner" /> : <Search size={20} />}
-              </button>
+              <div className="search-footer">
+                <div className="search-footer-left">
+                  <span className="enter-key">
+                    <CornerDownLeft size={10} /> Enter
+                  </span>
+                  to submit
+                </div>
+                <div className="search-footer-right">
+                  <button
+                    type="submit"
+                    className="submit-btn"
+                    disabled={loading || !query.trim()}
+                  >
+                    <ArrowUp size={16} />
+                  </button>
+                </div>
+              </div>
             </div>
           </form>
-        </motion.div>
 
-        <AnimatePresence mode="wait">
-          {(loading || error || result) && (
-            <motion.div
-              layout
-              className="right-panel"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.4 }}
-            >
-              {loading && (
-                <div className="loading-container glass-panel">
-                  <TerminalSquare size={48} className="spinner" />
-                  <motion.h3
-                    animate={{ opacity: [0.5, 1, 0.5] }}
-                    transition={{ repeat: Infinity, duration: 1.5 }}
-                  >
-                    Crafting Manim Script...
-                  </motion.h3>
+          <div className="suggestions-grid">
+            <button className="suggestion-pill" onClick={() => setQuery('Demonstrate sine and cosine waves')}>
+              <BarChart2 size={14} style={{ color: '#4ade80' }} /> Demonstrate sine and cosine waves
+            </button>
+            <button className="suggestion-pill" onClick={() => setQuery('Projectile motion')}>
+              <Play size={14} style={{ color: '#f97316' }} /> Projectile motion
+            </button>
+            <button className="suggestion-pill" onClick={() => setQuery('Compare exponential growth vs linear growth')}>
+              <TrendingUp size={14} style={{ color: '#ef4444' }} /> Compare exponential growth vs linear growth
+            </button>
+            <button className="suggestion-pill" onClick={() => setQuery('Slope of a tangent line')}>
+              <Layers size={14} style={{ color: '#3b82f6' }} /> Slope of a tangent line
+            </button>
+            <button className="suggestion-pill" onClick={() => setQuery("Bayes' theorem visualization")}>
+              <Activity size={14} style={{ color: '#a855f7' }} /> Bayes' theorem visualization
+            </button>
+            <button className="suggestion-pill" onClick={() => setQuery('Sample mean derivation')}>
+              <BarChart2 size={14} style={{ color: '#06b6d4' }} /> Sample mean derivation
+            </button>
+          </div>
+        </main>
+      ) : (
+        <main className="split-view">
+          {/* Left Panel - Chat */}
+          <div className="chat-sidebar">
+            <div className="chat-messages">
+              {submittedQuery && (
+                <div className="user-message">
+                  {submittedQuery}
                 </div>
               )}
 
-              {error && (
-                <div className="error-message glass-panel">
-                  <AlertCircle size={24} />
-                  <span>{error}</span>
+              <div className="ai-message">
+                <div className="ai-avatar-name">
+                  <Sparkles size={16} color="var(--accent-color)" />
+                  <span>Animind AI</span>
+                </div>
+
+                {loading && (
+                  <div className="loading-state">
+                    <Activity size={20} className="spinner" />
+                    <span>Crafting your mathematical animation...</span>
+                  </div>
+                )}
+
+                {error && (
+                  <div className="error-message">
+                    <AlertCircle size={20} />
+                    <span>{error}</span>
+                  </div>
+                )}
+
+                {result && !loading && (
+                  <div className="success-state">
+                    <p>
+                      Your animation is ready! The media player on the right shows the generated mathematical visualization.
+                      You can also view the generated Manim code representation if needed.
+                    </p>
+                    <div className="code-fragment-btn">
+                      <Code2 size={14} />
+                      Generated Manim Script
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div ref={endOfMessagesRef} />
+            </div>
+
+            <div className="chat-input-wrapper">
+              <form onSubmit={handleSubmit} style={{ width: '100%' }}>
+                <div className="search-container chat-search-container">
+                  <textarea
+                    className="search-input"
+                    placeholder="Ask a follow-up or create a new animation..."
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    disabled={loading}
+                    autoFocus
+                  />
+                  <div className="search-footer">
+                    <div className="search-footer-left">
+                      <span className="enter-key">
+                        <CornerDownLeft size={10} /> Enter
+                      </span>
+                      to submit
+                    </div>
+                    <div className="search-footer-right">
+                      <button
+                        type="submit"
+                        className="submit-btn"
+                        disabled={loading || !query.trim()}
+                      >
+                        <ArrowUp size={16} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          {/* Right Panel - Media Player View */}
+          <div className="media-viewer">
+            <div className="media-header">
+              <button className="icon-btn action-btn" onClick={() => { }}>
+                <RefreshCw size={16} />
+              </button>
+              <div className="share-link-bar">
+                <Share2 size={14} />
+                <span>animind.ai/share/session-ab91-4c72</span>
+              </div>
+              <button className="icon-btn action-btn">
+                <ExternalLink size={16} />
+              </button>
+            </div>
+
+            <div className="media-content">
+              {loading && !result && !error && (
+                <div className="placeholder-media">
+                  <Activity size={48} className="spinner" color="var(--accent-color)" />
+                  <p>Compiling rendering engine...</p>
+                </div>
+              )}
+
+              {!loading && !result && error && (
+                <div className="placeholder-media error-media">
+                  <AlertCircle size={48} color="#ef4444" />
+                  <p>Failed to generate view.</p>
                 </div>
               )}
 
               {result && !loading && (
-                <div className="result-container glass-panel">
-                  <div className="result-header">
-                    <h2><Code2 size={24} color="var(--accent-color)" /> Generated Manim Code</h2>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                      <span style={{
-                        fontSize: '0.85rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        color: result.syntax_valid ? '#4ade80' : '#f87171'
-                      }}>
-                        <div style={{
-                          width: '8px',
-                          height: '8px',
-                          borderRadius: '50%',
-                          background: result.syntax_valid ? '#4ade80' : '#f87171'
-                        }}></div>
-                        Syntax: {result.syntax_valid ? 'Valid' : 'Invalid'}
-                      </span>
-                      <button
-                        onClick={handleReset}
-                        style={{
-                          background: 'rgba(255,255,255,0.1)',
-                          border: '1px solid rgba(255,255,255,0.2)',
-                          padding: '0.4rem 0.8rem',
-                          borderRadius: '6px',
-                          color: 'white',
-                          fontSize: '0.85rem',
-                        }}
-                      >
-                        New Query
-                      </button>
-                    </div>
-                  </div>
-
+                <div className="result-display">
                   {result.video_path ? (
-                    <div style={{ width: '100%', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
-                      <video
-                        controls
-                        autoPlay
-                        loop
-                        style={{ width: '100%', display: 'block' }}
-                      >
-                        <source src={`http://127.0.0.1:8000${result.video_path}`} type="video/mp4" />
-                        Your browser does not support the video tag.
-                      </ video>
-                    </div>
+                    <video controls autoPlay loop className="video-player-large">
+                      <source src={`http://127.0.0.1:8000${result.video_path}`} type="video/mp4" />
+                      Your browser does not support the video tag.
+                    </video>
                   ) : (
-                    <div className="code-block">
-                      {result.code || '# No code generated.'}
+                    <div className="code-view-large">
+                      <div className="code-view-header">
+                        <span className="status-badge">
+                          <div className={`status-dot ${result.syntax_valid ? 'valid' : 'invalid'}`}></div>
+                          Syntax: {result.syntax_valid ? 'Valid' : 'Invalid'}
+                        </span>
+                      </div>
+                      <pre>
+                        {result.code || '# No code generated.'}
+                      </pre>
                     </div>
                   )}
-
                 </div>
               )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </div>
 
-      </motion.div>
+            <div className="media-footer">
+              <span>This animation took 1 Generation Step and was processed successfully.</span>
+              <div className="watermark">Made with Animind AI</div>
+            </div>
+          </div>
+        </main>
+      )}
     </div>
   );
 }
