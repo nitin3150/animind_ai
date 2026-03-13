@@ -13,12 +13,18 @@ interface GenerateResponse {
   video_path?: string;
 }
 
+interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content?: string;
+  result?: GenerateResponse;
+  error?: string;
+  loading?: boolean;
+}
+
 function App() {
   const [query, setQuery] = useState('');
-  const [submittedQuery, setSubmittedQuery] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<GenerateResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
 
@@ -26,39 +32,45 @@ function App() {
     if (endOfMessagesRef.current) {
       endOfMessagesRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [loading, result, error]);
+  }, [messages]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
 
-    setSubmittedQuery(query);
-    setLoading(true);
-    setError(null);
-    setResult(null);
-
-    // Keep query in input or clear it? Better to clear it for the next message in chat layout
     const currentQuery = query;
+    const isFirstPrompt = messages.length === 0;
+    const endpoint = isFirstPrompt ? 'http://127.0.0.1:8000/generate/' : 'http://127.0.0.1:8000/generate/edit';
+
+    const userMsgId = Date.now().toString() + '-user';
+    const aiMsgId = Date.now().toString() + '-ai';
+
+    setMessages(prev => [
+      ...prev,
+      { id: userMsgId, role: 'user', content: currentQuery },
+      { id: aiMsgId, role: 'assistant', loading: true }
+    ]);
     setQuery('');
 
     try {
-      const { data } = await axios.post<GenerateResponse>('http://127.0.0.1:8000/generate/', {
+      const { data } = await axios.post<GenerateResponse>(endpoint, {
         user_query: currentQuery
       });
-      setResult(data);
+      setMessages(prev => prev.map(msg =>
+        msg.id === aiMsgId ? { ...msg, loading: false, result: data } : msg
+      ));
     } catch (err: any) {
       console.error(err);
-      setError(err.response?.data?.detail || 'Failed to connect to the Animind AI server.');
-    } finally {
-      setLoading(false);
+      const errorText = err.response?.data?.detail || 'Failed to connect to the Animind AI server.';
+      setMessages(prev => prev.map(msg =>
+        msg.id === aiMsgId ? { ...msg, loading: false, error: errorText } : msg
+      ));
     }
   };
 
   const handleReset = () => {
     setQuery('');
-    setSubmittedQuery('');
-    setResult(null);
-    setError(null);
+    setMessages([]);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -68,7 +80,13 @@ function App() {
     }
   };
 
-  const isSplitView = !!submittedQuery || loading || error || result;
+  const isSplitView = messages.length > 0;
+  
+  const currentAiMessage = messages.length > 0 ? messages[messages.length - 1] : null;
+  const isCurrentlyLoading = currentAiMessage?.role === 'assistant' && currentAiMessage?.loading;
+  const latestAiMessageWithResult = [...messages].reverse().find(m => m.role === 'assistant' && m.result);
+  const resultToDisplay = latestAiMessageWithResult?.result;
+  const errorToDisplay = currentAiMessage?.role === 'assistant' && currentAiMessage?.error ? currentAiMessage.error : null;
 
   return (
     <div className="app-container">
@@ -112,7 +130,7 @@ function App() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
-                disabled={loading}
+                disabled={isCurrentlyLoading}
                 autoFocus
               />
               <div className="search-footer">
@@ -126,7 +144,7 @@ function App() {
                   <button
                     type="submit"
                     className="submit-btn"
-                    disabled={loading || !query.trim()}
+                    disabled={isCurrentlyLoading || !query.trim()}
                   >
                     <ArrowUp size={16} />
                   </button>
@@ -160,46 +178,55 @@ function App() {
         <main className="split-view">
           {/* Left Panel - Chat */}
           <div className="chat-sidebar">
-            <div className="chat-messages">
-              {submittedQuery && (
-                <div className="user-message">
-                  {submittedQuery}
-                </div>
-              )}
-
-              <div className="ai-message">
-                <div className="ai-avatar-name">
-                  <Sparkles size={16} color="var(--accent-color)" />
-                  <span>Animind AI</span>
-                </div>
-
-                {loading && (
-                  <div className="loading-state">
-                    <Activity size={20} className="spinner" />
-                    <span>Crafting your mathematical animation...</span>
-                  </div>
-                )}
-
-                {error && (
-                  <div className="error-message">
-                    <AlertCircle size={20} />
-                    <span>{error}</span>
-                  </div>
-                )}
-
-                {result && !loading && (
-                  <div className="success-state">
-                    <p>
-                      Your animation is ready! The media player on the right shows the generated mathematical visualization.
-                      You can also view the generated Manim code representation if needed.
-                    </p>
-                    <div className="code-fragment-btn">
-                      <Code2 size={14} />
-                      Generated Manim Script
+            <div className="chat-header" style={{ padding: '16px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 600 }}>Chat History</h3>
+              <button 
+                onClick={handleReset}
+                className="new-session-btn"
+              >
+                + New Session
+              </button>
+            </div>
+            <div className="chat-messages" style={{ height: 'calc(100% - 130px)', overflowY: 'auto' }}>
+              {messages.map((msg) => (
+                <div key={msg.id}>
+                  {msg.role === 'user' ? (
+                    <div className="user-message">
+                      {msg.content}
                     </div>
-                  </div>
-                )}
-              </div>
+                  ) : (
+                    <div className="ai-message">
+                      <div className="ai-avatar-name">
+                        <Sparkles size={16} color="var(--accent-color)" />
+                        <span>Animind AI</span>
+                      </div>
+                      {msg.loading && (
+                        <div className="loading-state">
+                          <Activity size={20} className="spinner" />
+                          <span>Crafting your mathematical animation...</span>
+                        </div>
+                      )}
+                      {msg.error && (
+                        <div className="error-message">
+                          <AlertCircle size={20} />
+                          <span>{msg.error}</span>
+                        </div>
+                      )}
+                      {msg.result && !msg.loading && (
+                        <div className="success-state">
+                          <p>
+                            Your animation is ready! The media player on the right shows the generated mathematical visualization.
+                          </p>
+                          <div className="code-fragment-btn">
+                            <Code2 size={14} />
+                            Generated Manim Script
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
               <div ref={endOfMessagesRef} />
             </div>
 
@@ -212,7 +239,7 @@ function App() {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    disabled={loading}
+                    disabled={isCurrentlyLoading}
                     autoFocus
                   />
                   <div className="search-footer">
@@ -226,7 +253,7 @@ function App() {
                       <button
                         type="submit"
                         className="submit-btn"
-                        disabled={loading || !query.trim()}
+                        disabled={isCurrentlyLoading || !query.trim()}
                       >
                         <ArrowUp size={16} />
                       </button>
@@ -253,37 +280,37 @@ function App() {
             </div>
 
             <div className="media-content">
-              {loading && !result && !error && (
+              {isCurrentlyLoading && !resultToDisplay && !errorToDisplay && (
                 <div className="placeholder-media">
                   <Activity size={48} className="spinner" color="var(--accent-color)" />
                   <p>Compiling rendering engine...</p>
                 </div>
               )}
 
-              {!loading && !result && error && (
+              {!isCurrentlyLoading && !resultToDisplay && errorToDisplay && (
                 <div className="placeholder-media error-media">
                   <AlertCircle size={48} color="#ef4444" />
                   <p>Failed to generate view.</p>
                 </div>
               )}
 
-              {result && !loading && (
-                <div className="result-display">
-                  {result.video_path ? (
-                    <video controls autoPlay loop className="video-player-large">
-                      <source src={`http://127.0.0.1:8000${result.video_path}`} type="video/mp4" />
+              {resultToDisplay && (
+                <div className="result-display" style={{ opacity: isCurrentlyLoading ? 0.6 : 1 }}>
+                  {resultToDisplay.video_path ? (
+                    <video key={resultToDisplay.video_path} controls autoPlay loop className="video-player-large">
+                      <source src={`http://127.0.0.1:8000${resultToDisplay.video_path}`} type="video/mp4" />
                       Your browser does not support the video tag.
                     </video>
                   ) : (
                     <div className="code-view-large">
                       <div className="code-view-header">
                         <span className="status-badge">
-                          <div className={`status-dot ${result.syntax_valid ? 'valid' : 'invalid'}`}></div>
-                          Syntax: {result.syntax_valid ? 'Valid' : 'Invalid'}
+                          <div className={`status-dot ${resultToDisplay.syntax_valid ? 'valid' : 'invalid'}`}></div>
+                          Syntax: {resultToDisplay.syntax_valid ? 'Valid' : 'Invalid'}
                         </span>
                       </div>
                       <pre>
-                        {result.code || '# No code generated.'}
+                        {resultToDisplay.code || '# No code generated.'}
                       </pre>
                     </div>
                   )}

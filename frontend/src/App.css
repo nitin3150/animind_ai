@@ -288,6 +288,23 @@
   margin-bottom: 0;
 }
 
+.new-session-btn {
+  font-size: 0.75rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 4px;
+  background-color: var(--accent-color, #2dd4bf);
+  color: #1a1a1a;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+}
+
+.new-session-btn:hover {
+  opacity: 0.9;
+}
+
 .user-message {
   background: #27272a;
   color: #e4e4e7;
