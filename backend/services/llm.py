@@ -1,7 +1,7 @@
 import os
 import time
 import logging
-from litellm import completion,RateLimitError,APIConnectionError,TimeoutError
+from litellm import completion,RateLimitError,APIConnectionError,Timeout
 from dotenv import load_dotenv
 
 load_dotenv()
