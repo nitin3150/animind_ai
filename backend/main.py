@@ -1,9 +1,12 @@
+import logging
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from routes.generate import router
 from utils.save_code import get_tmp_dir
-import os
+
+logging.basicConfig(level=logging.INFO)
 
 app = FastAPI()
 
