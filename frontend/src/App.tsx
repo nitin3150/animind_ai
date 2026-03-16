@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import {
   Sun, ChevronDown, CornerDownLeft, ArrowUp, Code2, AlertCircle,
-  Play, TrendingUp, Layers, Activity, BarChart2, Sparkles,
+  Play, TrendingUp, Layers, Activity, BarChart2,
   RefreshCw, Share2, ExternalLink
 } from 'lucide-react';
 import './App.css';
@@ -81,7 +81,7 @@ function App() {
   };
 
   const isSplitView = messages.length > 0;
-  
+
   const currentAiMessage = messages.length > 0 ? messages[messages.length - 1] : null;
   const isCurrentlyLoading = currentAiMessage?.role === 'assistant' && currentAiMessage?.loading;
   const latestAiMessageWithResult = [...messages].reverse().find(m => m.role === 'assistant' && m.result);
@@ -93,21 +93,9 @@ function App() {
       {/* Navbar */}
       <nav className="navbar">
         <div className="nav-left">
-          <div className="logo-container" onClick={handleReset} style={{ cursor: 'pointer' }}>
-            <Sparkles size={24} color="var(--accent-color)" />
+          <div className="logo-container" onClick={handleReset} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <img src="/logo.png" alt="Animind AI Logo" width="24" height="24" />
             <span>Animind AI</span>
-          </div>
-        </div>
-        <div className="nav-right">
-          <button className="icon-btn">
-            <Sun size={18} />
-          </button>
-          <div className="lang-selector">
-            English <ChevronDown size={14} />
-          </div>
-          <span className="profile-text">Nitin Goyal</span>
-          <div className="avatar">
-            <span>NG</span>
           </div>
         </div>
       </nav>
@@ -116,7 +104,7 @@ function App() {
       {!isSplitView ? (
         <main className="main-content hero-view">
           <div className="center-logo">
-            <Sparkles size={48} color="var(--accent-color)" />
+            <img src="/logo.png" alt="Animind AI" width="48" height="48" style={{ filter: 'drop-shadow(0 0 12px rgba(168, 85, 247, 0.4))' }} />
           </div>
 
           <h1 className="title">Animate math with Animind AI</h1>
@@ -180,7 +168,7 @@ function App() {
           <div className="chat-sidebar">
             <div className="chat-header" style={{ padding: '16px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 600 }}>Chat History</h3>
-              <button 
+              <button
                 onClick={handleReset}
                 className="new-session-btn"
               >
@@ -197,7 +185,7 @@ function App() {
                   ) : (
                     <div className="ai-message">
                       <div className="ai-avatar-name">
-                        <Sparkles size={16} color="var(--accent-color)" />
+                        <img src="/logo.png" alt="AI Avatar" width="16" height="16" />
                         <span>Animind AI</span>
                       </div>
                       {msg.loading && (
