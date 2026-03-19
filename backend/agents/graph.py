@@ -27,6 +27,7 @@ workflow.add_conditional_edges(
     {
         "execute_code": "execute_code",
         "code_fix": "code_fix",
+        "generation_failed": "generation_failed",
     },
 )
 workflow.add_edge("code_fix","code_syntax_validation")
@@ -35,6 +36,7 @@ workflow.add_conditional_edges(
     execution_router,
     {
         "code_fix": "code_fix",
+        "generation_failed": "generation_failed",
         END: END
     }
 )

@@ -14,7 +14,7 @@ def create_worker(file_name: str) -> Tuple[bool, str]:
     with open(code_path, "r") as f:
         code_content = f.read()
 
-    sandbox = Sandbox(template=E2B_TEMPLATE_ID)
+    sandbox = Sandbox.create(template=E2B_TEMPLATE_ID, timeout=0)
     try:
         # Upload code file to sandbox
         remote_code_path = f"/home/user/{file_name}"
@@ -24,7 +24,7 @@ def create_worker(file_name: str) -> Tuple[bool, str]:
         # Run manim inside the sandbox
         cmd = f"manim {remote_code_path} -ql --media_dir /home/user/media"
         print(f"Executing: {cmd}")
-        result = sandbox.commands.run(cmd, timeout=120)
+        result = sandbox.commands.run(cmd, timeout=0)
 
         if result.exit_code != 0:
             error_output = result.stderr if result.stderr else result.stdout
