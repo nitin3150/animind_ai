@@ -8,16 +8,9 @@ RUN apt-get update && apt-get install -y \
     libpango1.0-dev \
     pkg-config \
     python3-dev \
-    texlive-full \
+    texlive \
+    texlive-latex-extra \
     && rm -rf /var/lib/apt/lists/*
 
 # Install python dependencies
-RUN pip install manim pydantic
-
-WORKDIR /app
-
-# Copy the worker script
-COPY utils/worker.py worker.py
-
-# Make the python script the entrypoint so we can pass arguments to it
-ENTRYPOINT ["python", "worker.py"]
+RUN pip install manim
